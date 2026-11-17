@@ -4,6 +4,7 @@
 
 - 開始 OTA 下載、驗證或安裝交接時，自動捲動至進度與目前處理階段，避免長版更新說明把狀態推到畫面外。
 - 關於頁面顯示目前版本 `1.1.2`。
+- 已發布至 [GitHub Release](https://github.com/Daniel-LoCY/luna-cycle/releases/tag/v1.1.2)，並完成 Android API 31 模擬器 OTA 覆蓋更新驗證。
 
 ## 1.1.1 — 2026-11-17
 

@@ -64,10 +64,10 @@
 - [x] 模擬器測試發現進度區域原先留在視窗外，追加 `1.1.2+5` 可見性修正
 
 ## Phase 8 — OTA 進度可見性修正與驗收（1.1.2）
-- [ ] 建置並發布 `1.1.2+5`，核對 APK metadata、簽章及 GitHub digest
-- [ ] 於 API 31 模擬器檢查進度可見，並從 `1.1.1+4` 覆蓋更新至正式 APK
-- [ ] 確認更新後首次安裝時間未變、App 可重新啟動，最新版本檢查正常
-- [ ] 更新 README、CHANGELOG 與本次驗收紀錄
+- [x] 建置並發布 `1.1.2+5`，核對 APK metadata、簽章及 GitHub digest
+- [x] 於 API 31 模擬器檢查進度可見，並從以 `1.1.2` 程式碼建置、版本覆寫為 `1.1.1+4` 的測試基底 OTA 更新至正式 APK
+- [x] 確認更新後首次安裝時間未變、App 可重新啟動，最新版本檢查正常
+- [x] 更新 README、CHANGELOG 與本次驗收紀錄
 
 ## 驗收紀錄
 
@@ -82,4 +82,6 @@
 - 2026-11-17：Drift schema 升至 v3，加入藥物排程、服用標記、每日通知、舊 v2 備份相容、就診摘要 PDF、備份檢查和快速記錄復原；`flutter analyze` 通過，46 項 Flutter 測試通過。
 - 2026-11-17：本機 Release APK `1.1.0+3` 成功建置，確認 Application ID `app.lunacycle.personal`、minSdk 24、簽章指紋與預期相符；SHA-256 `269a8ef81bd19c09d58ae0aa38f5f7c1f78b5137f81c393e7b0aa13947e48dae`。API 31 模擬器使用同 Application ID／簽章、版本號設為 `1.0.0+2` 的 OTA 測試基底，從公開 Release 下載並驗證 APK，經 Android Package Installer 覆蓋更新至 `1.1.0+3`；新版本啟動成功，最新版本檢查顯示「目前已是最新版本」。`firstInstallTime` 保持 `2026-11-13 12:49:36`，`lastUpdateTime` 更新為 `2026-11-17 15:48:53`；安裝後 APK SHA-256 與 Release APK 相同，簽章指紋為 `909ab7d2ac94094284335763e26246acf716376b1b2844867dbcf1b0cfb0b1d5`。公開 `1.0.0` APK 尚無 App 內更新器，首次安裝 `1.1.0` 需手動更新。測試期間週期紀錄為空，因此未逐筆比較既有健康紀錄。
 - 2026-11-17：新增 APK 串流下載進度與階段訊息，下載時顯示已收／總位元組與百分比，驗證期間顯示 SHA-256、版本及簽章檢查狀態；Android 系統安裝器負責最後安裝進度。`flutter analyze` 無問題，`flutter test --concurrency=1` 46 項通過。此 UI 尚未發布至 APK。
-- 2026-11-17：API 31 模擬器中 `1.1.0+3` 已下載並驗證公開 `1.1.1+4` APK；畫面檢查發現長版更新說明使進度列離開視窗。新增 Widget 回歸測試，修正前測得進度列在視窗上方，修正後會自動捲入視窗；`flutter analyze` 無問題，`flutter test --no-pub --concurrency=1` 47 項通過。`1.1.2+5` 發布及端對端安裝驗收尚待完成。
+- 2026-11-17：API 31 模擬器中 `1.1.0+3` 已下載並驗證公開 `1.1.1+4` APK；畫面檢查發現長版更新說明使進度列離開視窗。新增 Widget 回歸測試，修正前測得進度列在視窗上方，修正後會自動捲入視窗；`flutter analyze` 無問題，`flutter test --no-pub --concurrency=1` 47 項通過。後續已隨 `1.1.2+5` 發布，並於模擬器完成系統安裝流程驗收（詳見下兩筆）。
+- 2026-11-17：發布公開 GitHub Release [`v1.1.2`](https://github.com/Daniel-LoCY/luna-cycle/releases/tag/v1.1.2)，版本 `1.1.2+5`、Application ID `app.lunacycle.personal`、APK 83,483,504 bytes。GitHub APK digest 與 Release APK、本機標準輸出及模擬器安裝檔一致：`fe493ceb87c789725796ccff4f3fbd3a499ebcaa3988d7f1ef12f3ffe5c3f3f6`；`update.json` digest 為 `sha256:28c35d0e8c321bc8d89e696d19cd0f13069c0018d1f72c1d8224669b07dc1fc0`。安裝檔簽章指紋為 `909ab7d2ac94094284335763e26246acf716376b1b2844867dbcf1b0cfb0b1d5`。
+- 2026-11-17：Android API 31 模擬器使用以 `1.1.2` 程式碼建置、版本覆寫為 `1.1.1+4` 的測試基底執行 OTA 查詢及下載，長版更新說明下仍可見進度，實際觀察到 11%、47%、59%、90%，完成後顯示 SHA-256／版本／簽章驗證成功；交由 Android PackageInstaller 確認後安裝正式 `1.1.2+5`。`firstInstallTime` 維持 `2026-11-13 12:49:36`，`lastUpdateTime` 為 `2026-11-17 17:46:20`；強制停止後可重新啟動，手動檢查顯示「目前已是最新版本」。模擬器原本沒有週期紀錄，故無法逐筆比較健康紀錄。測試後已將 `REQUEST_INSTALL_PACKAGES` 設為 `ignore` 並關閉模擬器。
