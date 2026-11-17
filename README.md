@@ -65,7 +65,7 @@ Release APK：
 flutter build apk --release
 ```
 
-輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。目前原始碼及本機簽署 APK 為 `1.1.0+3`（versionCode 3，83,401,584 bytes）；先前交付並完成同簽章覆蓋更新驗證的版本為 `1.0.0+2`。`1.1.0+3` 尚未發布至 GitHub，也尚未在本輪 Android 裝置上覆蓋安裝驗證。
+輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。目前正式版為 `1.1.0+3`（versionCode 3，83,401,584 bytes），已發布至 [GitHub Release](https://github.com/Daniel-LoCY/luna-cycle/releases/tag/v1.1.0)，並在 Android API 31 模擬器完成從 `1.0.0+2` 的 OTA 覆蓋更新、安裝後啟動及最新版本檢查。測試時沒有週期紀錄可供逐筆比對；Android 回報首次安裝時間未變，更新設定也保留。
 
 APK SHA-256：
 
@@ -108,7 +108,7 @@ adb install -r build/app/outputs/flutter-apk/app-release.apk
 
 App 只讀取公開的 `Daniel-LoCY/luna-cycle` 最新正式 Release。Release 必須包含 `update.json` 及命名為 `luna-cycle-<version>+<build>.apk` 的 APK。更新程式檢查 Application ID、versionCode、最低 Android API、GitHub asset SHA-256、APK 大小和固定正式簽章指紋，再交給 Android PackageInstaller 顯示確認。裝置可能要求在系統設定允許 Luna Cycle 安裝此來源的 App。
 
-公開 GitHub repository 已建立，`v1.1.0` Draft Release 已備妥但尚未發布；線上更新安裝尚未完成 Android 裝置端對端驗證。後續版本在本機完成 `gh auth login`、設定 `android/key.properties`，確保程式碼已提交且工作樹乾淨，再執行：
+公開 GitHub repository 已建立，`v1.1.0` 已發布，且 API 31 模擬器已完成線上更新安裝端對端驗證。後續版本在本機完成 `gh auth login`、設定 `android/key.properties`，確保程式碼已提交且工作樹乾淨，再執行：
 
 ```sh
 FLUTTER_BIN=/absolute/path/to/flutter scripts/publish_github_release.sh
@@ -120,7 +120,7 @@ FLUTTER_BIN=/absolute/path/to/flutter scripts/publish_github_release.sh
 FLUTTER_BIN=/absolute/path/to/flutter scripts/publish_github_release.sh --publish
 ```
 
-`--publish` 不會等待人工審稿；目前 `v1.1.0` 草稿則可在確認後以 GitHub CLI 發布：`gh release edit v1.1.0 --repo Daniel-LoCY/luna-cycle --draft=false`。Android Release 簽署私鑰及密碼只留在本機，不提交或上傳至 GitHub；因此目前自動建置／發布由本機腳本執行，沒有把簽章交給 GitHub Actions。每次發布前須提高 `pubspec.yaml` 的版本號和 versionCode。
+`--publish` 會在本機建置與驗證完成後直接建立並發布 GitHub Release，不等待人工審稿。簽署私鑰及密碼只留在本機，不提交或上傳至 GitHub；自動建置／發布由本機腳本執行，尚未把簽章交給 GitHub Actions。每次發布前須提高 `pubspec.yaml` 的版本號和 versionCode。
 
 首次揭露後，每日最多自動檢查一次；可在「我的 → App 更新」關閉。手動檢查永遠可用。GitHub 不可用時，App 仍可離線記錄與查看健康資料。
 
