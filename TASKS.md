@@ -74,8 +74,8 @@
 - [x] 將下載、驗證與安裝交接進度放在主要操作位置，進度百分比與下載量成組呈現
 - [x] 發布腳本只擷取 CHANGELOG 中目前版本段落，加入 Python 測試涵蓋段落擷取、版本精確比對與缺少內容
 - [x] 新增 Widget 回歸測試覆蓋歷史訊息隱藏、已安裝版本快取過濾、長說明下進度位置與可見狀態
-- [ ] 建置並發布 `1.1.3+6`，確認 Release manifest 只含目前版本說明
-- [ ] 於 Android API 31 模擬器由 `1.1.2+5` OTA 更新並確認安裝後版本、簽章與最新版本狀態
+- [x] 建置並發布 `1.1.3+6`，確認 Release manifest 只含目前版本說明
+- [x] 於 Android API 31 模擬器由 `1.1.2+5` OTA 更新並確認安裝後版本、簽章與最新版本狀態
 
 ## 驗收紀錄
 
@@ -93,4 +93,6 @@
 - 2026-11-17：API 31 模擬器中 `1.1.0+3` 已下載並驗證公開 `1.1.1+4` APK；畫面檢查發現長版更新說明使進度列離開視窗。新增 Widget 回歸測試，修正前測得進度列在視窗上方，修正後會自動捲入視窗；`flutter analyze` 無問題，`flutter test --no-pub --concurrency=1` 47 項通過。後續已隨 `1.1.2+5` 發布，並於模擬器完成系統安裝流程驗收（詳見下兩筆）。
 - 2026-11-17：發布公開 GitHub Release [`v1.1.2`](https://github.com/Daniel-LoCY/luna-cycle/releases/tag/v1.1.2)，版本 `1.1.2+5`、Application ID `app.lunacycle.personal`、APK 83,483,504 bytes。GitHub APK digest 與 Release APK、本機標準輸出及模擬器安裝檔一致：`fe493ceb87c789725796ccff4f3fbd3a499ebcaa3988d7f1ef12f3ffe5c3f3f6`；`update.json` digest 為 `sha256:28c35d0e8c321bc8d89e696d19cd0f13069c0018d1f72c1d8224669b07dc1fc0`。安裝檔簽章指紋為 `909ab7d2ac94094284335763e26246acf716376b1b2844867dbcf1b0cfb0b1d5`。
 - 2026-11-17：Android API 31 模擬器使用以 `1.1.2` 程式碼建置、版本覆寫為 `1.1.1+4` 的測試基底執行 OTA 查詢及下載，長版更新說明下仍可見進度，實際觀察到 11%、47%、59%、90%，完成後顯示 SHA-256／版本／簽章驗證成功；交由 Android PackageInstaller 確認後安裝正式 `1.1.2+5`。`firstInstallTime` 維持 `2026-11-13 12:49:36`，`lastUpdateTime` 為 `2026-11-17 17:46:20`；強制停止後可重新啟動，手動檢查顯示「目前已是最新版本」。模擬器原本沒有週期紀錄，故無法逐筆比較健康紀錄。測試後已將 `REQUEST_INSTALL_PACKAGES` 設為 `ignore` 並關閉模擬器。
-- 2026-11-17：為 `1.1.3+6` 加入目前 Release 段落擷取與測試；更新畫面移除持久化舊狀態顯示，當次結果即時呈現，下載／驗證／安裝交接進度改為主要操作區塊，並隱藏已安裝版本的快取更新。Widget 測試覆蓋歷史狀態隱藏、已安裝更新過濾及長說明下進度可見；完整 Flutter 48 項測試、`flutter analyze` 無問題，Python 說明擷取測試 3 項通過。Release 與模擬器 OTA 驗收待完成。
+- 2026-11-17：為 `1.1.3+6` 加入目前 Release 段落擷取與測試；更新畫面移除持久化舊狀態顯示，當次結果即時呈現，下載／驗證／安裝交接進度改為主要操作區塊，並隱藏已安裝版本的快取更新。Widget 測試覆蓋歷史狀態隱藏、已安裝更新過濾及長說明下進度可見；完整 Flutter 48 項測試、`flutter analyze` 無問題，Python 說明擷取測試 3 項通過。
+- 2026-11-17：公開發布 [`v1.1.3`](https://github.com/Daniel-LoCY/luna-cycle/releases/tag/v1.1.3)，版本 `1.1.3+6`、Application ID `app.lunacycle.personal`，APK 大小 83,483,856 bytes；Release APK digest `34fc6ed3a9ad448f94207aec9371f13b62627acf6c9e230ddd42bdc0f8625b9d`，`update.json` digest `sha256:2ef5b789c96a9cb0dc171b3ac566f58db73416ef8d616f0614ed358981ece538`，簽章指紋 `909ab7d2ac94094284335763e26246acf716376b1b2844867dbcf1b0cfb0b1d5`。GitHub Release 說明與 OTA manifest 只包含本版本兩項變更。
+- 2026-11-17：Android API 31 模擬器從正式 `1.1.2+5` App 檢查、下載及驗證 `1.1.3+6`，Android PackageInstaller 覆蓋安裝成功；`firstInstallTime` 維持 `2026-11-13 12:49:36`，`lastUpdateTime` 為 `2026-11-17 18:27:15`。裝置實際安裝 APK 的 SHA-256 與 Release APK 相同，versionCode、versionName 及簽章均吻合。強制停止後重新啟動，快取的已安裝更新及舊檢查時間不再顯示；手動檢查只顯示「目前已是最新版本」。測試期間沒有月經紀錄，故未逐筆比較健康資料。已復原安裝來源權限並關閉模擬器；已刪除本機舊版本／測試 APK，只保留最新 Release APK。

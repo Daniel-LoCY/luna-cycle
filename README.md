@@ -65,7 +65,7 @@ Release APK：
 flutter build apk --release
 ```
 
-輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。目前準備發布的版本為 `1.1.3+6`；GitHub Release APK 的 SHA-256 由發布腳本寫入 `update.json`，並與 GitHub asset digest 一致。Android API 31 模擬器已用版本號覆寫為 `1.1.1+4` 的測試基底（以 `1.1.2` 程式碼建置）完成先前 OTA 覆蓋更新驗證；`1.1.3+6` 的 UI 與發布驗收見下方紀錄。
+輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。目前正式版為 `1.1.3+6`；GitHub Release APK 的 SHA-256 由發布腳本寫入 `update.json`，並與 GitHub asset digest 一致。Android API 31 模擬器已完成 `1.1.2+5` 至 `1.1.3+6` 的 App 內 OTA 覆蓋更新、重新啟動及最新版本檢查。
 
 APK SHA-256 請以 [最新 GitHub Release](https://github.com/Daniel-LoCY/luna-cycle/releases/latest) 的 APK asset digest 為準；App 下載時會與 `update.json` 內的 SHA-256 再比對。
 
@@ -108,7 +108,7 @@ App 只讀取公開的 `Daniel-LoCY/luna-cycle` 最新正式 Release。Release �
 
 `1.1.3+6` 起，更新頁只顯示目前 Release 的變更內容和當次操作結果，不保留舊檢查時間或錯誤訊息；下載及驗證進度與主要操作合併顯示。舊版本的歷史說明仍留在 CHANGELOG 與 GitHub Release，App 更新畫面不再整份列出。
 
-公開 GitHub repository 的 `v1.1.0`、`v1.1.1` 與 `v1.1.2` Release 已發布；`v1.1.3` 驗收後會加入同一更新流程。後續版本在本機完成 `gh auth login`、設定 `android/key.properties`，確保程式碼已提交且工作樹乾淨，再執行：
+公開 GitHub repository 的 `v1.1.0`、`v1.1.1`、`v1.1.2` 與 `v1.1.3` Release 均已發布。後續版本在本機完成 `gh auth login`、設定 `android/key.properties`，確保程式碼已提交且工作樹乾淨，再執行：
 
 ```sh
 FLUTTER_BIN=/absolute/path/to/flutter scripts/publish_github_release.sh
