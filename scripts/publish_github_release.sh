@@ -115,8 +115,23 @@ VERSION_CODE="${BASH_REMATCH[2]}"
 TAG="v$VERSION_NAME"
 APK="build/app/outputs/flutter-apk/app-release.apk"
 APK_NAME="luna-cycle-${VERSION_NAME}+${VERSION_CODE}.apk"
-NOTES_FILE="${LUNA_RELEASE_NOTES_FILE:-CHANGELOG.md}"
+RELEASE_NOTES_FILE="build/release-notes-${VERSION_NAME}.md"
 MANIFEST="build/update.json"
+
+if [[ -n "${LUNA_RELEASE_NOTES_FILE:-}" ]]; then
+  if [[ ! -f "$LUNA_RELEASE_NOTES_FILE" ]]; then
+    echo "Release notes file not found: $LUNA_RELEASE_NOTES_FILE" >&2
+    exit 1
+  fi
+  cp "$LUNA_RELEASE_NOTES_FILE" "$RELEASE_NOTES_FILE"
+else
+  if [[ ! -f CHANGELOG.md ]]; then
+    echo "CHANGELOG.md not found." >&2
+    exit 1
+  fi
+  python3 scripts/extract_release_notes.py \
+    CHANGELOG.md "$VERSION_NAME" "$RELEASE_NOTES_FILE"
+fi
 
 if gh release view "$TAG" --repo "$REMOTE_REPOSITORY" >/dev/null 2>&1; then
   echo "Release $TAG already exists. Review its draft and publish it with:" >&2
@@ -134,7 +149,7 @@ else
     --dart-define="LUNA_GITHUB_REPOSITORY=$REPOSITORY"
 fi
 [[ -f "$APK" ]] || { echo "Release APK was not produced: $APK" >&2; exit 1; }
-[[ -f "$NOTES_FILE" ]] || { echo "Release notes file not found: $NOTES_FILE" >&2; exit 1; }
+[[ -f "$RELEASE_NOTES_FILE" ]] || { echo "Release notes file not found: $RELEASE_NOTES_FILE" >&2; exit 1; }
 
 APK_PACKAGE="$($APKANALYZER manifest application-id "$APK")"
 APK_VERSION="$($APKANALYZER manifest version-name "$APK")"
@@ -157,7 +172,7 @@ RELEASE_APK="build/$APK_NAME"
 cp "$APK" "$RELEASE_APK"
 mkdir -p "$(dirname "$MANIFEST")"
 
-python3 - "$MANIFEST" "$VERSION_NAME" "$VERSION_CODE" "$APK_MIN_API" "$APK_NAME" "$APK_SHA256" "$NOTES_FILE" <<'PY'
+python3 - "$MANIFEST" "$VERSION_NAME" "$VERSION_CODE" "$APK_MIN_API" "$APK_NAME" "$APK_SHA256" "$RELEASE_NOTES_FILE" <<'PY'
 import json
 import pathlib
 import sys
@@ -186,7 +201,7 @@ if [[ "$PUBLISH_RELEASE" == true ]]; then
     --repo "$REMOTE_REPOSITORY" \
     --target "$COMMIT" \
     --title "Luna Cycle $VERSION_NAME" \
-    --notes-file "$NOTES_FILE" \
+    --notes-file "$RELEASE_NOTES_FILE" \
     "$RELEASE_APK" \
     "$MANIFEST"
   echo "Published release: $REMOTE_REPOSITORY $TAG"
@@ -196,7 +211,7 @@ else
     --draft \
     --target "$COMMIT" \
     --title "Luna Cycle $VERSION_NAME" \
-    --notes-file "$NOTES_FILE" \
+    --notes-file "$RELEASE_NOTES_FILE" \
     "$RELEASE_APK" \
     "$MANIFEST"
   echo "Draft release created: $REMOTE_REPOSITORY $TAG"

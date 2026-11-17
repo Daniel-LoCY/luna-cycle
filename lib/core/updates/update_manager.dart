@@ -90,6 +90,9 @@ class UpdateManager {
     }
   }
 
+  Future<int> getInstalledVersionCode() async =>
+      (await installer.getDeviceInfo()).versionCode;
+
   Future<DateTime?> lastCheckedAt() async => DateTime.tryParse(
     await settings.getSetting('update_last_check_at') ?? '',
   );

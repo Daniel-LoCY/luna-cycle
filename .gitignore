@@ -6,6 +6,7 @@
 .pub/
 /build/
 /coverage/
+__pycache__/
 /android/.gradle/
 /android/local.properties
 /ios/Flutter/Generated.xcconfig
