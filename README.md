@@ -106,9 +106,11 @@ adb install -r build/app/outputs/flutter-apk/app-release.apk
 
 ## GitHub Release 更新
 
-App 只讀取公開的 `Daniel-LoCY/luna-cycle` 最新正式 Release。Release 必須包含 `update.json` 及命名為 `luna-cycle-<version>+<build>.apk` 的 APK。更新程式檢查 Application ID、versionCode、最低 Android API、GitHub asset SHA-256、APK 大小和固定正式簽章指紋，再交給 Android PackageInstaller 顯示確認。裝置可能要求在系統設定允許 Luna Cycle 安裝此來源的 App。
+App 只讀取公開的 `Daniel-LoCY/luna-cycle` 最新正式 Release。Release 必須包含 `update.json` 及命名為 `luna-cycle-<version>+<build>.apk` 的 APK。更新程式檢查 Application ID、versionCode、最低 Android API、GitHub asset SHA-256、APK 大小和固定正式簽章指紋，再交給 Android PackageInstaller 顯示確認。下載時 App 顯示百分比及已收／總大小，並標示雜湊與簽章驗證階段；安裝確認及實際安裝進度由 Android 系統畫面顯示。裝置可能要求在系統設定允許 Luna Cycle 安裝此來源的 App。
 
 公開的 `1.0.0` APK 尚未包含 App 內更新器，首次升級至 `1.1.0` 必須手動安裝 APK；安裝後即可使用 App 內更新檢查後續版本。
+
+下載進度介面已加入最新原始碼，尚未包含在公開的 `1.1.0` APK；需要下一版 APK 才能在手機上使用。
 
 公開 GitHub repository 已建立，`v1.1.0` 已發布，且 API 31 模擬器已完成線上更新安裝端對端驗證。後續版本在本機完成 `gh auth login`、設定 `android/key.properties`，確保程式碼已提交且工作樹乾淨，再執行：
 

@@ -48,6 +48,7 @@
 ## Phase 6 — GitHub Release 更新與藥物追蹤
 - [x] 查詢公開 GitHub Release；限制 HTTPS、重新導向主機、套件識別碼和最低 Android API
 - [x] 下載大小限制、GitHub asset SHA-256、APK metadata 和固定 Release 簽章驗證
+- [x] APK 串流下載與雜湊驗證；介面顯示下載百分比、資料量、相容性檢查及 Android 安裝交接狀態
 - [x] 首次更新揭露、每日檢查設定、手動檢查／下載及 Android 安裝確認
 - [x] 藥物每日多時段提醒、排程 CRUD、服用／略過記錄與 30 天實際標記摘要
 - [x] 加密備份含藥物資料，支援 v2 備份還原；就診摘要顯示使用者實際標記
@@ -69,3 +70,4 @@
 - 2026-11-17：建立 `Daniel-LoCY/luna-cycle` 公開 repository 並推送 `main`；發布 `v1.1.0`，資產為 `update.json` 和 APK。GitHub API 回報 APK SHA-256 與本機相同。
 - 2026-11-17：Drift schema 升至 v3，加入藥物排程、服用標記、每日通知、舊 v2 備份相容、就診摘要 PDF、備份檢查和快速記錄復原；`flutter analyze` 通過，46 項 Flutter 測試通過。
 - 2026-11-17：本機 Release APK `1.1.0+3` 成功建置，確認 Application ID `app.lunacycle.personal`、minSdk 24、簽章指紋與預期相符；SHA-256 `269a8ef81bd19c09d58ae0aa38f5f7c1f78b5137f81c393e7b0aa13947e48dae`。API 31 模擬器使用同 Application ID／簽章、版本號設為 `1.0.0+2` 的 OTA 測試基底，從公開 Release 下載並驗證 APK，經 Android Package Installer 覆蓋更新至 `1.1.0+3`；新版本啟動成功，最新版本檢查顯示「目前已是最新版本」。`firstInstallTime` 保持 `2026-11-13 12:49:36`，`lastUpdateTime` 更新為 `2026-11-17 15:48:53`；安裝後 APK SHA-256 與 Release APK 相同，簽章指紋為 `909ab7d2ac94094284335763e26246acf716376b1b2844867dbcf1b0cfb0b1d5`。公開 `1.0.0` APK 尚無 App 內更新器，首次安裝 `1.1.0` 需手動更新。測試期間週期紀錄為空，因此未逐筆比較既有健康紀錄。
+- 2026-11-17：新增 APK 串流下載進度與階段訊息，下載時顯示已收／總位元組與百分比，驗證期間顯示 SHA-256、版本及簽章檢查狀態；Android 系統安裝器負責最後安裝進度。`flutter analyze` 無問題，`flutter test --concurrency=1` 46 項通過。此 UI 尚未發布至 APK。

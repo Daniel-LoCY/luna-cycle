@@ -10,6 +10,15 @@ import 'github_update_repository.dart';
 
 enum UpdateInstallResult { permissionRequired, installerStarted }
 
+enum UpdatePreparationPhase { downloading, verifying, checkingCompatibility }
+
+enum UpdateInstallPhase {
+  verifying,
+  checkingCompatibility,
+  requestingPermission,
+  handingOff,
+}
+
 class DownloadedUpdate {
   const DownloadedUpdate({required this.update, required this.file});
 
@@ -85,18 +94,30 @@ class UpdateManager {
     await settings.getSetting('update_last_check_at') ?? '',
   );
 
-  Future<DownloadedUpdate> downloadAndVerify({AvailableUpdate? update}) async {
+  Future<DownloadedUpdate> downloadAndVerify({
+    AvailableUpdate? update,
+    void Function(int receivedBytes, int totalBytes)? onProgress,
+    void Function(UpdatePreparationPhase phase)? onPhase,
+  }) async {
     final available = update ?? await storedUpdate();
     if (available == null) throw StateError('目前沒有可下載的更新。');
-    final bytes = await repository.downloadApk(available);
     final temp = await _temporaryDirectory();
     final updateDirectory = Directory(p.join(temp.path, 'updates'));
     await updateDirectory.create(recursive: true);
     final file = File(
       p.join(updateDirectory.path, 'luna_cycle_${available.versionCode}.apk'),
     );
-    await file.writeAsBytes(bytes, flush: true);
     try {
+      onPhase?.call(UpdatePreparationPhase.downloading);
+      await repository.downloadApkToFile(
+        available,
+        file,
+        onProgress: (receivedBytes, totalBytes) =>
+            onProgress?.call(receivedBytes, totalBytes),
+        onVerificationStarted: () =>
+            onPhase?.call(UpdatePreparationPhase.verifying),
+      );
+      onPhase?.call(UpdatePreparationPhase.checkingCompatibility);
       final device = await installer.getDeviceInfo();
       final apk = await installer.inspectApk(file.path);
       validateAndroidUpdateApk(device: device, apk: apk, update: available);
@@ -112,7 +133,10 @@ class UpdateManager {
     }
   }
 
-  Future<UpdateInstallResult> installDownloaded() async {
+  Future<UpdateInstallResult> installDownloaded({
+    void Function(UpdateInstallPhase phase)? onPhase,
+  }) async {
+    onPhase?.call(UpdateInstallPhase.verifying);
     final update = await storedUpdate();
     final path = await settings.getSetting('update_downloaded_path');
     if (update == null || path == null || path.isEmpty) {
@@ -129,19 +153,22 @@ class UpdateManager {
       await settings.saveSetting('update_downloaded_path', '');
       throw const FormatException('暫存 APK 超過允許大小，請重新下載。');
     }
-    final bytes = await cachedFile.readAsBytes();
-    if (await sha256Hex(bytes) != update.apkSha256 ||
-        bytes.length != update.apkSize) {
+    final length = await cachedFile.length();
+    if (length != update.apkSize ||
+        await sha256FileHex(cachedFile) != update.apkSha256) {
       await cachedFile.delete();
       await settings.saveSetting('update_downloaded_path', '');
       throw const FormatException('暫存 APK 驗證失敗，請重新下載。');
     }
+    onPhase?.call(UpdateInstallPhase.checkingCompatibility);
     final device = await installer.getDeviceInfo();
     final apk = await installer.inspectApk(cachedFile.path);
     validateAndroidUpdateApk(device: device, apk: apk, update: update);
+    onPhase?.call(UpdateInstallPhase.requestingPermission);
     if (!await installer.requestInstallPermission()) {
       return UpdateInstallResult.permissionRequired;
     }
+    onPhase?.call(UpdateInstallPhase.handingOff);
     await installer.installApk(cachedFile.path);
     return UpdateInstallResult.installerStarted;
   }

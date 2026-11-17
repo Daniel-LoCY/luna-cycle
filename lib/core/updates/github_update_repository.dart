@@ -183,6 +183,100 @@ class GitHubUpdateRepository {
     return response.body;
   }
 
+  Future<void> downloadApkToFile(
+    AvailableUpdate update,
+    File destination, {
+    required void Function(int receivedBytes, int totalBytes) onProgress,
+    required void Function() onVerificationStarted,
+  }) async {
+    if (_fetcher != null) {
+      final bytes = await downloadApk(update);
+      await destination.writeAsBytes(bytes, flush: true);
+      onProgress(bytes.length, update.apkSize);
+      onVerificationStarted();
+      return;
+    }
+
+    await destination.parent.create(recursive: true);
+    var current = update.apkUri;
+    for (var redirects = 0; redirects <= 5; redirects++) {
+      if (!_isAllowedRequestUri(current)) {
+        throw const UpdateRepositoryException('更新伺服器網址不安全。');
+      }
+      final request = await _httpClient
+          .getUrl(current)
+          .timeout(const Duration(seconds: 20));
+      request.followRedirects = false;
+      request.headers.set(HttpHeaders.acceptHeader, '*/*');
+      request.headers.set(HttpHeaders.userAgentHeader, 'Luna-Cycle-Android');
+      request.headers.set(HttpHeaders.acceptEncodingHeader, 'identity');
+      final response = await request.close().timeout(
+        const Duration(seconds: 20),
+      );
+      if (response.statusCode >= 300 && response.statusCode < 400) {
+        final location = response.headers.value(HttpHeaders.locationHeader);
+        if (location == null || redirects == 5) {
+          await response.detachSocket().then((socket) => socket.destroy());
+          throw const UpdateRepositoryException('更新下載重新導向無效。');
+        }
+        await response.detachSocket().then((socket) => socket.destroy());
+        current = current.resolve(location);
+        continue;
+      }
+      if (response.statusCode != 200) {
+        await response.detachSocket().then((socket) => socket.destroy());
+        throw UpdateRepositoryException(
+          'APK 下載失敗（HTTP ${response.statusCode}）。',
+        );
+      }
+      if (response.contentLength > maxUpdateApkBytes ||
+          (response.contentLength >= 0 &&
+              response.contentLength != update.apkSize)) {
+        await response.detachSocket().then((socket) => socket.destroy());
+        throw const UpdateRepositoryException('APK 檔案大小與更新資訊不一致。');
+      }
+
+      final fileSink = destination.openWrite();
+      final hashSink = Sha256().toSync().newHashSink();
+      var receivedBytes = 0;
+      var sinkClosed = false;
+      try {
+        await for (final chunk in response.timeout(
+          const Duration(seconds: 60),
+        )) {
+          receivedBytes += chunk.length;
+          if (receivedBytes > update.apkSize ||
+              receivedBytes > maxUpdateApkBytes) {
+            await response.detachSocket().then((socket) => socket.destroy());
+            throw const UpdateRepositoryException('APK 檔案大小與更新資訊不一致。');
+          }
+          fileSink.add(chunk);
+          hashSink.add(chunk);
+          onProgress(receivedBytes, update.apkSize);
+        }
+        await fileSink.flush();
+        await fileSink.close();
+        sinkClosed = true;
+        if (receivedBytes != update.apkSize) {
+          throw const UpdateRepositoryException('APK 檔案大小與更新資訊不一致。');
+        }
+        onVerificationStarted();
+        hashSink.close();
+        if (_hex(hashSink.hashBytes) != update.apkSha256) {
+          throw const UpdateRepositoryException('APK SHA-256 驗證失敗，已取消安裝。');
+        }
+        return;
+      } catch (_) {
+        if (!sinkClosed) {
+          await fileSink.close().catchError((_) {});
+        }
+        await destination.delete().catchError((_) => destination);
+        rethrow;
+      }
+    }
+    throw const UpdateRepositoryException('更新下載重新導向次數過多。');
+  }
+
   Future<void> close() async {
     if (_fetcher == null) _httpClient.close(force: true);
   }
@@ -297,7 +391,7 @@ class GitHubUpdateRepository {
       await for (final chunk in response.timeout(const Duration(seconds: 60))) {
         length += chunk.length;
         if (length > maxBytes) {
-          response.detachSocket().then((socket) => socket.destroy());
+          await response.detachSocket().then((socket) => socket.destroy());
           throw const UpdateRepositoryException('更新檔案超過允許大小。');
         }
         body.add(chunk);
@@ -415,6 +509,15 @@ void _verifyDeclaredDigest(Map<String, dynamic> asset, String expected) {
 
 Future<String> sha256Hex(List<int> bytes) async =>
     _hex((await Sha256().hash(bytes)).bytes);
+
+Future<String> sha256FileHex(File file) async {
+  final hashSink = Sha256().toSync().newHashSink();
+  await for (final chunk in file.openRead()) {
+    hashSink.add(chunk);
+  }
+  hashSink.close();
+  return _hex(hashSink.hashBytes);
+}
 
 String _hex(List<int> bytes) =>
     bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();

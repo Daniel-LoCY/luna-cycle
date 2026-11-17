@@ -125,18 +125,43 @@ void main() {
       await manager.saveDisclosure(automaticChecksEnabled: true);
       final update = await manager.checkIfDue();
       expect(update?.versionCode, 3);
-      final downloaded = await manager.downloadAndVerify();
+      final preparationPhases = <UpdatePreparationPhase>[];
+      final downloadProgress = <(int, int)>[];
+      final downloaded = await manager.downloadAndVerify(
+        onPhase: preparationPhases.add,
+        onProgress: (received, total) =>
+            downloadProgress.add((received, total)),
+      );
+      expect(preparationPhases, [
+        UpdatePreparationPhase.downloading,
+        UpdatePreparationPhase.verifying,
+        UpdatePreparationPhase.checkingCompatibility,
+      ]);
+      expect(downloadProgress, [(apk.length, apk.length)]);
       expect(await downloaded.file.exists(), isTrue);
+      final permissionPhases = <UpdateInstallPhase>[];
       expect(
-        await manager.installDownloaded(),
+        await manager.installDownloaded(onPhase: permissionPhases.add),
         UpdateInstallResult.permissionRequired,
       );
+      expect(permissionPhases, [
+        UpdateInstallPhase.verifying,
+        UpdateInstallPhase.checkingCompatibility,
+        UpdateInstallPhase.requestingPermission,
+      ]);
       expect(installStarted, isFalse);
       installAllowed = true;
+      final installPhases = <UpdateInstallPhase>[];
       expect(
-        await manager.installDownloaded(),
+        await manager.installDownloaded(onPhase: installPhases.add),
         UpdateInstallResult.installerStarted,
       );
+      expect(installPhases, [
+        UpdateInstallPhase.verifying,
+        UpdateInstallPhase.checkingCompatibility,
+        UpdateInstallPhase.requestingPermission,
+        UpdateInstallPhase.handingOff,
+      ]);
       expect(installStarted, isTrue);
 
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

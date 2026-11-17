@@ -26,6 +26,13 @@ class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
   AvailableUpdate? _update;
   String? _status;
   String? _error;
+  String? _operationMessage;
+  String? _operationNotice;
+  bool _operationNoticeIsError = false;
+  double? _progressValue;
+  int? _receivedBytes;
+  int? _totalBytes;
+  int _lastProgressPercent = -1;
 
   @override
   void initState() {
@@ -60,8 +67,34 @@ class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
               child: Text('首次使用時會先說明自動檢查內容與隱私範圍。'),
             ),
           if (_busy) ...[
-            const LinearProgressIndicator(),
+            Semantics(
+              liveRegion: true,
+              label: _operationMessage ?? '正在處理更新',
+              value: _progressValue == null
+                  ? null
+                  : '${(_progressValue! * 100).round()}%',
+              child: LinearProgressIndicator(value: _progressValue),
+            ),
+            const SizedBox(height: 6),
+            Text(_operationMessage ?? '正在處理更新…'),
+            if (_receivedBytes case final received?) ...[
+              const SizedBox(height: 2),
+              Text(
+                '${((_progressValue ?? 0) * 100).round()}% · '
+                '${_formatBytes(received)}／${_formatBytes(_totalBytes ?? 0)}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
             const SizedBox(height: 8),
+          ],
+          if (_operationNotice case final notice?) ...[
+            Text(
+              notice,
+              style: _operationNoticeIsError
+                  ? TextStyle(color: Theme.of(context).colorScheme.error)
+                  : Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 6),
           ],
           Text(_statusLabel(), style: Theme.of(context).textTheme.bodyMedium),
           if (_lastCheckedAt != null) ...[
@@ -109,7 +142,7 @@ class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
             ),
             const SizedBox(height: 4),
             Text(
-              '下載完成後仍須由你點選安裝，Android 會顯示系統安裝確認。',
+              '下載與驗證狀態會顯示在此；安裝確認及安裝進度由 Android 系統顯示。',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -168,8 +201,16 @@ class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
   }
 
   Future<void> _checkNow() async {
-    await _run(() async {
+    await _run('正在檢查 GitHub Release…', () async {
       final update = await ref.read(updateManagerProvider).checkNow();
+      if (mounted) {
+        setState(() {
+          _operationNotice = update == null
+              ? '目前已是最新版本。'
+              : '找到版本 ${update.versionName}，可下載並驗證 APK。';
+          _operationNoticeIsError = false;
+        });
+      }
       _showMessage(
         update == null ? '目前已是最新版本。' : '找到版本 ${update.versionName}。',
       );
@@ -177,16 +218,38 @@ class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
   }
 
   Future<void> _download() async {
-    await _run(() async {
-      await ref.read(updateManagerProvider).downloadAndVerify(update: _update);
+    await _run('準備下載 APK…', () async {
+      await ref
+          .read(updateManagerProvider)
+          .downloadAndVerify(
+            update: _update,
+            onPhase: (phase) => _setPreparationPhase(phase),
+            onProgress: _reportDownloadProgress,
+          );
+      if (mounted) {
+        setState(() {
+          _downloaded = true;
+          _operationNotice = 'APK 已下載，SHA-256、版本及簽章驗證完成。';
+          _operationNoticeIsError = false;
+        });
+      }
       _showMessage('APK 已驗證，請確認後再交由 Android 安裝。');
-      if (mounted) setState(() => _downloaded = true);
     });
   }
 
   Future<void> _install() async {
-    await _run(() async {
-      final result = await ref.read(updateManagerProvider).installDownloaded();
+    await _run('正在重新驗證下載檔…', () async {
+      final result = await ref
+          .read(updateManagerProvider)
+          .installDownloaded(onPhase: _setInstallPhase);
+      if (mounted) {
+        setState(() {
+          _operationNotice = result == UpdateInstallResult.permissionRequired
+              ? '已開啟 Android 安裝來源設定；允許後返回，再點「交給 Android 安裝」。'
+              : '已交給 Android 安裝器。請依系統畫面確認，安裝進度會由 Android 顯示。';
+          _operationNoticeIsError = false;
+        });
+      }
       _showMessage(
         result == UpdateInstallResult.permissionRequired
             ? '已開啟 Android 安裝來源設定；完成設定後返回，再點選安裝。'
@@ -195,17 +258,93 @@ class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
     });
   }
 
-  Future<void> _run(Future<void> Function() action) async {
-    setState(() => _busy = true);
+  Future<void> _run(
+    String initialMessage,
+    Future<void> Function() action,
+  ) async {
+    setState(() {
+      _busy = true;
+      _operationMessage = initialMessage;
+      _operationNotice = null;
+      _operationNoticeIsError = false;
+      _progressValue = null;
+      _receivedBytes = null;
+      _totalBytes = null;
+      _lastProgressPercent = -1;
+    });
     try {
       await action();
     } catch (error) {
+      if (mounted) {
+        setState(() {
+          _operationNotice = '更新作業未完成：$error';
+          _operationNoticeIsError = true;
+        });
+      }
       _showMessage('更新作業失敗：$error');
     } finally {
       await _refresh();
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _operationMessage = null;
+          _progressValue = null;
+          _receivedBytes = null;
+          _totalBytes = null;
+        });
+      }
     }
   }
+
+  void _setPreparationPhase(UpdatePreparationPhase phase) {
+    final message = switch (phase) {
+      UpdatePreparationPhase.downloading => '正在下載 APK…',
+      UpdatePreparationPhase.verifying => '下載完成，正在驗證 SHA-256…',
+      UpdatePreparationPhase.checkingCompatibility => '正在檢查版本與簽章…',
+    };
+    if (!mounted) return;
+    setState(() {
+      _operationMessage = message;
+      _progressValue = phase == UpdatePreparationPhase.downloading ? 0 : null;
+      _receivedBytes = null;
+      _totalBytes = phase == UpdatePreparationPhase.downloading
+          ? _update?.apkSize
+          : null;
+      _lastProgressPercent = -1;
+    });
+  }
+
+  void _reportDownloadProgress(int receivedBytes, int totalBytes) {
+    final percent = (receivedBytes * 100 ~/ totalBytes).clamp(0, 100).toInt();
+    if (percent == _lastProgressPercent && receivedBytes < totalBytes) return;
+    _lastProgressPercent = percent;
+    if (!mounted) return;
+    setState(() {
+      _operationMessage = '正在下載 APK…';
+      _progressValue = (receivedBytes / totalBytes).clamp(0.0, 1.0).toDouble();
+      _receivedBytes = receivedBytes;
+      _totalBytes = totalBytes;
+    });
+  }
+
+  void _setInstallPhase(UpdateInstallPhase phase) {
+    final message = switch (phase) {
+      UpdateInstallPhase.verifying => '正在重新驗證 APK…',
+      UpdateInstallPhase.checkingCompatibility => '正在檢查版本與簽章…',
+      UpdateInstallPhase.requestingPermission => '正在確認 Android 安裝權限…',
+      UpdateInstallPhase.handingOff => '正在交給 Android 安裝器…',
+    };
+    if (!mounted) return;
+    setState(() {
+      _operationMessage = message;
+      _progressValue = null;
+      _receivedBytes = null;
+      _totalBytes = null;
+    });
+  }
+
+  static String _formatBytes(int bytes) =>
+      '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
 
   void _showMessage(String message) {
     if (!mounted) return;

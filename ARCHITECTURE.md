@@ -68,7 +68,7 @@ CSV 與 JSON 使用選定日期範圍，分享前顯示明確的敏感資料提�
 
 ## Android 更新來源
 
-`GitHubUpdateRepository` 僅查詢固定公開 repository 的 latest published release，限制 HTTPS、回應大小、重新導向主機、版本格式、套件識別碼與最低 Android API。`update.json` 的 SHA-256 會與 Release asset digest（若 API 提供）及下載 APK bytes 比對。下載後再由原生 PackageManager 讀取 APK package、version、minSdk 與簽章憑證，必須符合目前安裝版本和固定 Release 憑證指紋。APK 暫存在 App 私有目錄；呼叫 PackageInstaller 前再次驗證檔案雜湊與簽章。安裝由 Android 系統 UI 完成，不靜默安裝。
+`GitHubUpdateRepository` 僅查詢固定公開 repository 的 latest published release，限制 HTTPS、回應大小、重新導向主機、版本格式、套件識別碼與最低 Android API。`update.json` 的 SHA-256 會與 Release asset digest（若 API 提供）及下載 APK bytes 比對。APK 以串流分塊寫入 App 私有暫存目錄，同時回報進度並計算 SHA-256，避免把整個 APK 載入記憶體。下載完成後再由原生 PackageManager 讀取 APK package、version、minSdk 與簽章憑證，必須符合目前安裝版本和固定 Release 憑證指紋；呼叫 PackageInstaller 前再次驗證檔案雜湊與簽章。App 顯示下載百分比及驗證階段；Android 系統 UI 負責安裝確認和最後安裝進度，不靜默安裝。
 
 首次揭露後每天最多自動查詢一次；使用者可關閉。請求不附帶任何健康紀錄或本機識別資料。更新功能使用 Android INTERNET 與安裝來源權限；這不影響離線記錄。`scripts/publish_github_release.sh` 本機建置並驗證簽署 APK、產生 manifest；預設建立 Draft，也可用 `--publish` 直接發布。簽署 keystore 不會上傳至 GitHub。`v1.1.0` 已在 Android API 31 模擬器完成 GitHub OTA 查詢、下載驗證、系統安裝及更新後版本檢查。
 
