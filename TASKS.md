@@ -54,7 +54,7 @@
 - [x] 建立本機 Release 建置與驗證腳本；預設 Draft，可選擇驗證後直接發布，從不包含簽署私鑰
 - [x] 建立公開 `Daniel-LoCY/luna-cycle` repository
 - [x] 發布 GitHub Release `v1.1.0`
-- [x] 於 Android API 31 模擬器端對端驗證查詢、下載、APK 雜湊／簽章驗證、Android 安裝及更新後版本檢查
+- [x] 於 Android API 31 模擬器以同 Application ID／簽章、版本號設為 `1.0.0+2` 的 OTA 測試基底，端對端驗證查詢、下載、APK 雜湊／簽章驗證、Android 安裝及更新後版本檢查
 - [x] 確認覆蓋更新後首次安裝時間未變、更新揭露狀態保留；測試時沒有週期紀錄可供逐筆比對
 
 ## 驗收紀錄
@@ -68,4 +68,4 @@
 - 2026-11-13：使用 Xcode 26.4.1 完成 `flutter build ios --simulator --no-codesign`，成功產生 `build/ios/iphonesimulator/Runner.app`；未測試 iOS 實機簽署／安裝。
 - 2026-11-17：建立 `Daniel-LoCY/luna-cycle` 公開 repository 並推送 `main`；發布 `v1.1.0`，資產為 `update.json` 和 APK。GitHub API 回報 APK SHA-256 與本機相同。
 - 2026-11-17：Drift schema 升至 v3，加入藥物排程、服用標記、每日通知、舊 v2 備份相容、就診摘要 PDF、備份檢查和快速記錄復原；`flutter analyze` 通過，46 項 Flutter 測試通過。
-- 2026-11-17：本機 Release APK `1.1.0+3` 成功建置，確認 Application ID `app.lunacycle.personal`、minSdk 24、簽章指紋與預期相符；SHA-256 `269a8ef81bd19c09d58ae0aa38f5f7c1f78b5137f81c393e7b0aa13947e48dae`。API 31 模擬器由已安裝的 `1.0.0+2` 透過 App 內更新取得公開 Release、下載並驗證 APK，經 Android Package Installer 覆蓋更新至 `1.1.0+3`；新版本啟動成功，最新版本檢查顯示「目前已是最新版本」。`firstInstallTime` 保持 `2026-11-13 12:49:36`，`lastUpdateTime` 更新為 `2026-11-17 15:48:53`；安裝後 APK SHA-256 與 Release APK 相同，簽章指紋為 `909ab7d2ac94094284335763e26246acf716376b1b2844867dbcf1b0cfb0b1d5`。測試期間週期紀錄為空，因此未逐筆比較既有健康紀錄。
+- 2026-11-17：本機 Release APK `1.1.0+3` 成功建置，確認 Application ID `app.lunacycle.personal`、minSdk 24、簽章指紋與預期相符；SHA-256 `269a8ef81bd19c09d58ae0aa38f5f7c1f78b5137f81c393e7b0aa13947e48dae`。API 31 模擬器使用同 Application ID／簽章、版本號設為 `1.0.0+2` 的 OTA 測試基底，從公開 Release 下載並驗證 APK，經 Android Package Installer 覆蓋更新至 `1.1.0+3`；新版本啟動成功，最新版本檢查顯示「目前已是最新版本」。`firstInstallTime` 保持 `2026-11-13 12:49:36`，`lastUpdateTime` 更新為 `2026-11-17 15:48:53`；安裝後 APK SHA-256 與 Release APK 相同，簽章指紋為 `909ab7d2ac94094284335763e26246acf716376b1b2844867dbcf1b0cfb0b1d5`。公開 `1.0.0` APK 尚無 App 內更新器，首次安裝 `1.1.0` 需手動更新。測試期間週期紀錄為空，因此未逐筆比較既有健康紀錄。

@@ -65,7 +65,7 @@ Release APK：
 flutter build apk --release
 ```
 
-輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。目前正式版為 `1.1.0+3`（versionCode 3，83,401,584 bytes），已發布至 [GitHub Release](https://github.com/Daniel-LoCY/luna-cycle/releases/tag/v1.1.0)，並在 Android API 31 模擬器完成從 `1.0.0+2` 的 OTA 覆蓋更新、安裝後啟動及最新版本檢查。測試時沒有週期紀錄可供逐筆比對；Android 回報首次安裝時間未變，且更新揭露沒有再次出現。
+輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。目前正式版為 `1.1.0+3`（versionCode 3，83,401,584 bytes），已發布至 [GitHub Release](https://github.com/Daniel-LoCY/luna-cycle/releases/tag/v1.1.0)。在 Android API 31 模擬器以同 Application ID／簽章、版本號設為 `1.0.0+2` 的 OTA 測試基底，完成線上查詢、下載、驗證、系統安裝至 `1.1.0+3`、啟動及最新版本檢查。測試時沒有週期紀錄可供逐筆比對；Android 回報首次安裝時間未變，且更新揭露沒有再次出現。
 
 APK SHA-256：
 
@@ -107,6 +107,8 @@ adb install -r build/app/outputs/flutter-apk/app-release.apk
 ## GitHub Release 更新
 
 App 只讀取公開的 `Daniel-LoCY/luna-cycle` 最新正式 Release。Release 必須包含 `update.json` 及命名為 `luna-cycle-<version>+<build>.apk` 的 APK。更新程式檢查 Application ID、versionCode、最低 Android API、GitHub asset SHA-256、APK 大小和固定正式簽章指紋，再交給 Android PackageInstaller 顯示確認。裝置可能要求在系統設定允許 Luna Cycle 安裝此來源的 App。
+
+公開的 `1.0.0` APK 尚未包含 App 內更新器，首次升級至 `1.1.0` 必須手動安裝 APK；安裝後即可使用 App 內更新檢查後續版本。
 
 公開 GitHub repository 已建立，`v1.1.0` 已發布，且 API 31 模擬器已完成線上更新安裝端對端驗證。後續版本在本機完成 `gh auth login`、設定 `android/key.properties`，確保程式碼已提交且工作樹乾淨，再執行：
 
