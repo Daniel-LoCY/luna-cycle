@@ -58,9 +58,15 @@
 - [x] 於 Android API 31 模擬器以同 Application ID／簽章、版本號設為 `1.0.0+2` 的 OTA 測試基底，端對端驗證查詢、下載、APK 雜湊／簽章驗證、Android 安裝及更新後版本檢查
 - [x] 確認覆蓋更新後首次安裝時間未變、更新揭露狀態保留；測試時沒有週期紀錄可供逐筆比對
 
-## Phase 7 — OTA 進度版發布與驗收
-- [ ] 建置並發布 `1.1.1+4`，核對 APK metadata、簽章及 GitHub digest
-- [ ] 於 API 31 模擬器從 OTA 測試基底安裝、驗證下載進度並覆蓋更新至正式 APK
+## Phase 7 — OTA 下載進度發布（1.1.1）
+- [x] 建置並發布 `1.1.1+4`，核對 APK metadata、簽章及 GitHub digest
+- [x] 加入 Widget 回歸測試，確認長版更新說明下開始操作時會自動捲動至進度狀態
+- [x] 模擬器測試發現進度區域原先留在視窗外，追加 `1.1.2+5` 可見性修正
+
+## Phase 8 — OTA 進度可見性修正與驗收（1.1.2）
+- [ ] 建置並發布 `1.1.2+5`，核對 APK metadata、簽章及 GitHub digest
+- [ ] 於 API 31 模擬器檢查進度可見，並從 `1.1.1+4` 覆蓋更新至正式 APK
+- [ ] 確認更新後首次安裝時間未變、App 可重新啟動，最新版本檢查正常
 - [ ] 更新 README、CHANGELOG 與本次驗收紀錄
 
 ## 驗收紀錄
@@ -76,3 +82,4 @@
 - 2026-11-17：Drift schema 升至 v3，加入藥物排程、服用標記、每日通知、舊 v2 備份相容、就診摘要 PDF、備份檢查和快速記錄復原；`flutter analyze` 通過，46 項 Flutter 測試通過。
 - 2026-11-17：本機 Release APK `1.1.0+3` 成功建置，確認 Application ID `app.lunacycle.personal`、minSdk 24、簽章指紋與預期相符；SHA-256 `269a8ef81bd19c09d58ae0aa38f5f7c1f78b5137f81c393e7b0aa13947e48dae`。API 31 模擬器使用同 Application ID／簽章、版本號設為 `1.0.0+2` 的 OTA 測試基底，從公開 Release 下載並驗證 APK，經 Android Package Installer 覆蓋更新至 `1.1.0+3`；新版本啟動成功，最新版本檢查顯示「目前已是最新版本」。`firstInstallTime` 保持 `2026-11-13 12:49:36`，`lastUpdateTime` 更新為 `2026-11-17 15:48:53`；安裝後 APK SHA-256 與 Release APK 相同，簽章指紋為 `909ab7d2ac94094284335763e26246acf716376b1b2844867dbcf1b0cfb0b1d5`。公開 `1.0.0` APK 尚無 App 內更新器，首次安裝 `1.1.0` 需手動更新。測試期間週期紀錄為空，因此未逐筆比較既有健康紀錄。
 - 2026-11-17：新增 APK 串流下載進度與階段訊息，下載時顯示已收／總位元組與百分比，驗證期間顯示 SHA-256、版本及簽章檢查狀態；Android 系統安裝器負責最後安裝進度。`flutter analyze` 無問題，`flutter test --concurrency=1` 46 項通過。此 UI 尚未發布至 APK。
+- 2026-11-17：API 31 模擬器中 `1.1.0+3` 已下載並驗證公開 `1.1.1+4` APK；畫面檢查發現長版更新說明使進度列離開視窗。新增 Widget 回歸測試，修正前測得進度列在視窗上方，修正後會自動捲入視窗；`flutter analyze` 無問題，`flutter test --no-pub --concurrency=1` 47 項通過。`1.1.2+5` 發布及端對端安裝驗收尚待完成。

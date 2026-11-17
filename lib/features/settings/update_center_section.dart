@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +19,8 @@ class UpdateCenterSection extends ConsumerStatefulWidget {
 }
 
 class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
+  final GlobalKey _operationProgressKey = GlobalKey();
+
   bool _busy = false;
   bool _autoCheck = true;
   bool _disclosureSeen = false;
@@ -51,7 +54,7 @@ class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
           title: Text('App 更新'),
           subtitle: Text('從 GitHub Release 取得已簽章的 Android APK。'),
         ),
-        if (!Platform.isAndroid)
+        if (defaultTargetPlatform != TargetPlatform.android)
           const Text('App 內 APK 更新目前只支援 Android。')
         else ...[
           SwitchListTile.adaptive(
@@ -68,6 +71,7 @@ class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
             ),
           if (_busy) ...[
             Semantics(
+              key: _operationProgressKey,
               liveRegion: true,
               label: _operationMessage ?? '正在處理更新',
               value: _progressValue == null
@@ -272,6 +276,7 @@ class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
       _totalBytes = null;
       _lastProgressPercent = -1;
     });
+    _scrollProgressIntoView();
     try {
       await action();
     } catch (error) {
@@ -345,6 +350,19 @@ class _UpdateCenterSectionState extends ConsumerState<UpdateCenterSection> {
 
   static String _formatBytes(int bytes) =>
       '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+
+  void _scrollProgressIntoView() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final progressContext = _operationProgressKey.currentContext;
+      if (!mounted || progressContext == null) return;
+      Scrollable.ensureVisible(
+        progressContext,
+        alignment: 0.25,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
 
   void _showMessage(String message) {
     if (!mounted) return;

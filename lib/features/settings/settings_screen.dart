@@ -181,7 +181,7 @@ class SettingsScreen extends ConsumerWidget {
           child: ListTile(
             leading: Icon(Icons.info_outline),
             title: Text('關於 Luna Cycle'),
-            subtitle: Text('版本 1.1.0 · 離線個人健康紀錄'),
+            subtitle: Text('版本 1.1.2 · 離線個人健康紀錄'),
           ),
         ),
       ],
