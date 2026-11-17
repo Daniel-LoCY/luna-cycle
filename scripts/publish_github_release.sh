@@ -4,6 +4,27 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+PUBLISH_RELEASE=false
+case "${1:-}" in
+  ""|--draft) ;;
+  --publish) PUBLISH_RELEASE=true ;;
+  --help|-h)
+    echo "Usage: scripts/publish_github_release.sh [--draft|--publish]"
+    echo "Default: build and validate the APK, then create a GitHub Draft Release."
+    echo "--publish: build and validate the APK, then publish the GitHub Release immediately."
+    exit 0
+    ;;
+  *)
+    echo "Unknown option: $1" >&2
+    echo "Usage: scripts/publish_github_release.sh [--draft|--publish]" >&2
+    exit 2
+    ;;
+esac
+if [[ "$#" -gt 1 ]]; then
+  echo "Pass at most one release mode option." >&2
+  exit 2
+fi
+
 OWNER="${LUNA_GITHUB_OWNER:-Daniel-LoCY}"
 REPOSITORY="${LUNA_GITHUB_REPOSITORY:-luna-cycle}"
 REMOTE_REPOSITORY="$OWNER/$REPOSITORY"
@@ -97,6 +118,12 @@ APK_NAME="luna-cycle-${VERSION_NAME}+${VERSION_CODE}.apk"
 NOTES_FILE="${LUNA_RELEASE_NOTES_FILE:-CHANGELOG.md}"
 MANIFEST="build/update.json"
 
+if gh release view "$TAG" --repo "$REMOTE_REPOSITORY" >/dev/null 2>&1; then
+  echo "Release $TAG already exists. Review its draft and publish it with:" >&2
+  echo "  gh release edit $TAG --repo $REMOTE_REPOSITORY --draft=false" >&2
+  exit 1
+fi
+
 if [[ -n "${FLUTTER_BIN:-}" ]]; then
   "$FLUTTER_BIN" --no-version-check build apk --release \
     --dart-define="LUNA_GITHUB_OWNER=$OWNER" \
@@ -154,15 +181,27 @@ pathlib.Path(manifest_path).write_text(
 PY
 
 COMMIT="$(git rev-parse HEAD)"
-gh release create "$TAG" \
-  --repo "$REMOTE_REPOSITORY" \
-  --draft \
-  --target "$COMMIT" \
-  --title "Luna Cycle $VERSION_NAME" \
-  --notes-file "$NOTES_FILE" \
-  "$RELEASE_APK" \
-  "$MANIFEST"
-
-echo "Draft release created: $REMOTE_REPOSITORY $TAG"
+if [[ "$PUBLISH_RELEASE" == true ]]; then
+  gh release create "$TAG" \
+    --repo "$REMOTE_REPOSITORY" \
+    --target "$COMMIT" \
+    --title "Luna Cycle $VERSION_NAME" \
+    --notes-file "$NOTES_FILE" \
+    "$RELEASE_APK" \
+    "$MANIFEST"
+  echo "Published release: $REMOTE_REPOSITORY $TAG"
+else
+  gh release create "$TAG" \
+    --repo "$REMOTE_REPOSITORY" \
+    --draft \
+    --target "$COMMIT" \
+    --title "Luna Cycle $VERSION_NAME" \
+    --notes-file "$NOTES_FILE" \
+    "$RELEASE_APK" \
+    "$MANIFEST"
+  echo "Draft release created: $REMOTE_REPOSITORY $TAG"
+fi
 echo "APK SHA-256: $APK_SHA256"
-echo "Review the draft in GitHub and publish it only after verifying the release notes and APK."
+if [[ "$PUBLISH_RELEASE" != true ]]; then
+  echo "Review the draft in GitHub and publish it only after verifying the release notes and APK."
+fi

@@ -114,7 +114,13 @@ App 只讀取公開的 `Daniel-LoCY/luna-cycle` 最新正式 Release。Release �
 FLUTTER_BIN=/absolute/path/to/flutter scripts/publish_github_release.sh
 ```
 
-腳本會本機簽署 APK、核對套件／版本／最低 API／憑證指紋，產生含 SHA-256 的 `update.json`，並建立 GitHub **Draft Release**。檢查草稿和資產後，需在 GitHub 手動發布，App 才會取得該版本。Android Release 簽署私鑰及密碼只能留在安全的本機儲存，不得提交或上傳至 GitHub。建立 Release 前也須提高 `pubspec.yaml` 的 versionCode。
+腳本會本機簽署 APK、核對套件／版本／最低 API／憑證指紋，並產生含 SHA-256 的 `update.json`。預設建立 GitHub **Draft Release**；加入 `--publish` 會在驗證完成後直接公開發布：
+
+```sh
+FLUTTER_BIN=/absolute/path/to/flutter scripts/publish_github_release.sh --publish
+```
+
+`--publish` 不會等待人工審稿；目前 `v1.1.0` 草稿則可在確認後以 GitHub CLI 發布：`gh release edit v1.1.0 --repo Daniel-LoCY/luna-cycle --draft=false`。Android Release 簽署私鑰及密碼只留在本機，不提交或上傳至 GitHub；因此目前自動建置／發布由本機腳本執行，沒有把簽章交給 GitHub Actions。每次發布前須提高 `pubspec.yaml` 的版本號和 versionCode。
 
 首次揭露後，每日最多自動檢查一次；可在「我的 → App 更新」關閉。手動檢查永遠可用。GitHub 不可用時，App 仍可離線記錄與查看健康資料。
 
