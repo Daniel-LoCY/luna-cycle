@@ -95,7 +95,7 @@ TAG="v$VERSION_NAME"
 APK="build/app/outputs/flutter-apk/app-release.apk"
 APK_NAME="luna-cycle-${VERSION_NAME}+${VERSION_CODE}.apk"
 NOTES_FILE="${LUNA_RELEASE_NOTES_FILE:-CHANGELOG.md}"
-MANIFEST="build/luna-cycle-update.json"
+MANIFEST="build/update.json"
 
 if [[ -n "${FLUTTER_BIN:-}" ]]; then
   "$FLUTTER_BIN" --no-version-check build apk --release \
