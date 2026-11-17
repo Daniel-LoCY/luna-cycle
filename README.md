@@ -65,13 +65,9 @@ Release APK：
 flutter build apk --release
 ```
 
-輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。目前正式版為 `1.1.0+3`（versionCode 3，83,401,584 bytes），已發布至 [GitHub Release](https://github.com/Daniel-LoCY/luna-cycle/releases/tag/v1.1.0)。在 Android API 31 模擬器以同 Application ID／簽章、版本號設為 `1.0.0+2` 的 OTA 測試基底，完成線上查詢、下載、驗證、系統安裝至 `1.1.0+3`、啟動及最新版本檢查。測試時沒有週期紀錄可供逐筆比對；Android 回報首次安裝時間未變，且更新揭露沒有再次出現。
+輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。本次來源版本為 `1.1.1+4`；GitHub Release APK 的 SHA-256 由發布腳本寫入 `update.json`，並與 GitHub asset digest 一致。上一版 `1.1.0+3` 已於 Android API 31 模擬器完成 OTA 覆蓋更新驗證。
 
-APK SHA-256：
-
-```text
-269a8ef81bd19c09d58ae0aa38f5f7c1f78b5137f81c393e7b0aa13947e48dae
-```
+APK SHA-256 請以 [最新 GitHub Release](https://github.com/Daniel-LoCY/luna-cycle/releases/latest) 的 APK asset digest 為準；App 下載時會與 `update.json` 內的 SHA-256 再比對。
 
 正式簽章憑證 SHA-256 指紋：
 
@@ -110,9 +106,9 @@ App 只讀取公開的 `Daniel-LoCY/luna-cycle` 最新正式 Release。Release �
 
 公開的 `1.0.0` APK 尚未包含 App 內更新器，首次升級至 `1.1.0` 必須手動安裝 APK；安裝後即可使用 App 內更新檢查後續版本。
 
-下載進度介面已加入最新原始碼，尚未包含在公開的 `1.1.0` APK；需要下一版 APK 才能在手機上使用。
+公開的 `1.1.0` APK 沒有下載進度介面；這項功能隨 `1.1.1+4` 發布。
 
-公開 GitHub repository 已建立，`v1.1.0` 已發布，且 API 31 模擬器已完成線上更新安裝端對端驗證。後續版本在本機完成 `gh auth login`、設定 `android/key.properties`，確保程式碼已提交且工作樹乾淨，再執行：
+公開 GitHub repository 已建立，`v1.1.0` 已發布；`v1.1.1` 發布與 OTA 模擬器測試進行中。後續版本在本機完成 `gh auth login`、設定 `android/key.properties`，確保程式碼已提交且工作樹乾淨，再執行：
 
 ```sh
 FLUTTER_BIN=/absolute/path/to/flutter scripts/publish_github_release.sh

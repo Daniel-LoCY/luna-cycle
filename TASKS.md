@@ -58,6 +58,11 @@
 - [x] 於 Android API 31 模擬器以同 Application ID／簽章、版本號設為 `1.0.0+2` 的 OTA 測試基底，端對端驗證查詢、下載、APK 雜湊／簽章驗證、Android 安裝及更新後版本檢查
 - [x] 確認覆蓋更新後首次安裝時間未變、更新揭露狀態保留；測試時沒有週期紀錄可供逐筆比對
 
+## Phase 7 — OTA 進度版發布與驗收
+- [ ] 建置並發布 `1.1.1+4`，核對 APK metadata、簽章及 GitHub digest
+- [ ] 於 API 31 模擬器從 OTA 測試基底安裝、驗證下載進度並覆蓋更新至正式 APK
+- [ ] 更新 README、CHANGELOG 與本次驗收紀錄
+
 ## 驗收紀錄
 
 - 2026-11-13：以 Flutter 3.50.0 stable／Dart 3.14.0 實作 App；`flutter analyze` 通過，`flutter test --concurrency=1` 29 項通過。
