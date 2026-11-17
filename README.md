@@ -65,7 +65,7 @@ Release APK：
 flutter build apk --release
 ```
 
-輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。目前正式版為 `1.1.0+3`（versionCode 3，83,401,584 bytes），已發布至 [GitHub Release](https://github.com/Daniel-LoCY/luna-cycle/releases/tag/v1.1.0)，並在 Android API 31 模擬器完成從 `1.0.0+2` 的 OTA 覆蓋更新、安裝後啟動及最新版本檢查。測試時沒有週期紀錄可供逐筆比對；Android 回報首次安裝時間未變，更新設定也保留。
+輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。目前正式版為 `1.1.0+3`（versionCode 3，83,401,584 bytes），已發布至 [GitHub Release](https://github.com/Daniel-LoCY/luna-cycle/releases/tag/v1.1.0)，並在 Android API 31 模擬器完成從 `1.0.0+2` 的 OTA 覆蓋更新、安裝後啟動及最新版本檢查。測試時沒有週期紀錄可供逐筆比對；Android 回報首次安裝時間未變，且更新揭露沒有再次出現。
 
 APK SHA-256：
 
