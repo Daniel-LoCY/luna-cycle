@@ -15,4 +15,5 @@
 key.properties
 .env*
 .DS_Store
+*.iml
 

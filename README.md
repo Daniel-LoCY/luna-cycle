@@ -1,28 +1,125 @@
 # Luna Cycle
 
-離線優先的繁體中文月經與健康週期紀錄 App。Android 是第一版安裝目標，Application ID 為 `app.lunacycle.personal`。
+Luna Cycle 是一款 Android 優先、繁體中文、離線優先的月經週期與健康紀錄 App。無帳號、無後端、無分析追蹤 SDK；核心紀錄保存在手機的加密 SQLite 資料庫。Android 可選擇透過 HTTPS 查詢公開 GitHub Release 更新，查詢不會傳送健康資料。
 
-## 開發環境
+## 功能
 
-本專案需要目前相容的 Flutter stable、Android SDK command-line tools、Android SDK、JDK 及 Gradle。請以 `flutter doctor -v` 確認環境。具體版本將在工具鏈與套件相容性確認後記錄。
+- 首頁、月曆、記錄、分析、我的五個主要分頁
+- 月經開始／結束、歷史補登、編輯、刪除及每日經血紀錄
+- 週期預測使用最近六個有效週期的中位數與變異程度；不同追蹤模式不會錯用自然週期模型
+- 症狀、情緒、疼痛、身體狀況、生殖健康、藥物、自訂事件及日記記錄
+- 週期長度、經期天數、症狀、情緒、疼痛、經血量與預測偏差分析
+- 本機經期提醒、每日記錄提醒、自訂單次提醒及 App 靜音時段
+- 每日藥物排程、多時段提醒、服用／略過標記與近 30 天已記錄摘要
+- CSV、JSON、繁體中文 PDF 匯出；以密碼加密的完整備份與還原
+- 可選擇產生包含逐日紀錄及已標記藥物服用狀態的就診摘要 PDF
+- 可選擇以指紋、臉部辨識或裝置螢幕鎖保護 App
+- Android GitHub Release 更新檢查、APK 雜湊／簽章驗證及系統安裝流程
+
+預測只供紀錄與粗略估算，不提供醫療診斷或避孕保證。通知文字不含月經、症狀、藥物或提醒名稱。更新需要網路；健康紀錄、分析和匯出仍可離線使用。下載與安裝都需使用者操作並由 Android 顯示系統確認。
+
+## 工具鏈
+
+- Flutter 3.50 stable、Dart 3.14
+- Android SDK 36、JDK 21、Gradle 9.5、AGP 9.3.1
+- Android Application ID：`app.lunacycle.personal`；最低 API 24
+- 主要套件：Riverpod、go_router、Drift、SQLite3MultipleCiphers、fl_chart、flutter_local_notifications、local_auth
+
+目前已在 Android API 31 模擬器完成安裝、通知流程與覆蓋更新驗證；另以 Xcode 26.4.1 成功建置 iOS Simulator app（`flutter build ios --simulator --no-codesign`）。iOS 實機簽署及安裝尚未驗證。
+
+從 Flutter 專案目錄執行：
 
 ```sh
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 flutter analyze
-flutter test
+flutter test --concurrency=1
 flutter run
 ```
 
-## Release APK
+執行 Android 端整合流程：
 
-Release 使用專用 Android keystore。請勿將 keystore 或含密碼的 `key.properties` 加入版本控制。設定完成後執行：
+```sh
+flutter test integration_test/app_flow_test.dart -d <emulator-id>
+```
+
+## 本機資料安全
+
+SQLite 以 SQLite3MultipleCiphers 加密。隨機 256-bit 金鑰由 `flutter_secure_storage` 保存在平台安全儲存。若既有資料庫的金鑰遺失或加密引擎不可用，App 會停止開啟該資料庫，不會降級成明文或覆寫原檔。Android 自動備份已停用，避免只還原資料庫而遺失對應金鑰。
+
+加密備份使用 PBKDF2-HMAC-SHA256 衍生金鑰及 AES-256-GCM 驗證加密。還原前會驗證密碼、格式、大小、欄位與版本，之後才在單一資料庫交易內取代現有內容。忘記備份密碼就無法還原。CSV、JSON 及 PDF 是未加密檔案，分享前會提醒使用者檢查目的地。
+
+PDF 內嵌 Noto Sans TC 字型以支援離線繁體中文；字型依 SIL Open Font License 提供，授權檔在 `assets/licenses/NotoSansTC-OFL.txt`。
+
+## 建立 Android APK
+
+Debug APK：
+
+```sh
+flutter build apk --debug
+```
+
+Release APK：
 
 ```sh
 flutter build apk --release
 ```
 
-輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。覆蓋更新必須沿用相同 Application ID 與簽章，並遞增 `versionCode`；實際更新與資料保留需在 Android 裝置驗證。
+輸出位於 `build/app/outputs/flutter-apk/app-release.apk`。目前原始碼及本機簽署 APK 為 `1.1.0+3`（versionCode 3，83,401,584 bytes）；先前交付並完成同簽章覆蓋更新驗證的版本為 `1.0.0+2`。`1.1.0+3` 尚未發布至 GitHub，也尚未在本輪 Android 裝置上覆蓋安裝驗證。
 
-目前仍在 Phase 1，功能與建置狀態以 `TASKS.md` 驗收紀錄為準。
+APK SHA-256：
 
+```text
+269a8ef81bd19c09d58ae0aa38f5f7c1f78b5137f81c393e7b0aa13947e48dae
+```
+
+正式簽章憑證 SHA-256 指紋：
+
+```text
+909ab7d2ac94094284335763e26246acf716376b1b2844867dbcf1b0cfb0b1d5
+```
+
+安裝或覆蓋更新：
+
+```sh
+adb install -r build/app/outputs/flutter-apk/app-release.apk
+```
+
+正式版包含 OTA 查詢所需的 INTERNET 權限。App 不會在背景靜默安裝；正式版必須使用固定的 Android Application ID 與同一把 Release keystore 簽署，才可覆蓋更新並保留 SQLite 資料。
+
+Keystore、密碼和 Gradle 設定都應放在 repo 外或 Git 忽略的本機檔案中。請將 keystore 和密碼各自安全備份，不要提交到 Git、聊天紀錄或公開雲端。若搬到另一台建置機，使用自己的私密路徑建立 `android/key.properties`：
+
+```properties
+storeFile=/absolute/path/to/luna-cycle-release.jks
+storePassword=your-store-password
+keyAlias=luna-cycle-release
+keyPassword=your-key-password
+```
+
+簽章遺失後無法以相同 App 身分發布可覆蓋安裝的 APK。每次發布前提高 `pubspec.yaml` 版本號和 build number；再以相同 keystore 執行 Release build，安裝時可使用：
+
+```sh
+adb install -r build/app/outputs/flutter-apk/app-release.apk
+```
+
+資料庫結構升級必須增加 Drift schema version 並撰寫 migration；不可在升級時刪除或重建使用者資料庫。覆蓋安裝仍應在 Android 裝置上驗證版本號、簽章及資料保留。
+
+## GitHub Release 更新
+
+App 只讀取公開的 `Daniel-LoCY/luna-cycle` 最新正式 Release。Release 必須包含 `update.json` 及命名為 `luna-cycle-<version>+<build>.apk` 的 APK。更新程式檢查 Application ID、versionCode、最低 Android API、GitHub asset SHA-256、APK 大小和固定正式簽章指紋，再交給 Android PackageInstaller 顯示確認。裝置可能要求在系統設定允許 Luna Cycle 安裝此來源的 App。
+
+目前尚未建立公開 GitHub repository，因此線上更新檢查與 Release 安裝尚未完成端對端驗證。Repository 建立後，在本機完成 `gh auth login`、設定 `android/key.properties`，確保程式碼已提交且工作樹乾淨，再執行：
+
+```sh
+FLUTTER_BIN=/absolute/path/to/flutter scripts/publish_github_release.sh
+```
+
+腳本會本機簽署 APK、核對套件／版本／最低 API／憑證指紋，產生含 SHA-256 的 `update.json`，並建立 GitHub **Draft Release**。檢查草稿和資產後，需在 GitHub 手動發布，App 才會取得該版本。Android Release 簽署私鑰及密碼只能留在安全的本機儲存，不得提交或上傳至 GitHub。建立 Release 前也須提高 `pubspec.yaml` 的 versionCode。
+
+首次揭露後，每日最多自動檢查一次；可在「我的 → App 更新」關閉。手動檢查永遠可用。GitHub 不可用時，App 仍可離線記錄與查看健康資料。
+
+## 文件
+
+- [ARCHITECTURE.md](ARCHITECTURE.md)：程式分層、安全資料流、資料模型、預測與雲端擴充界線
+- [TASKS.md](TASKS.md)：實作、驗收狀態與測試紀錄
+- [CHANGELOG.md](CHANGELOG.md)：版本更新摘要
