@@ -52,7 +52,8 @@
 - [x] 藥物每日多時段提醒、排程 CRUD、服用／略過記錄與 30 天實際標記摘要
 - [x] 加密備份含藥物資料，支援 v2 備份還原；就診摘要顯示使用者實際標記
 - [x] 建立本機 Release 建置與驗證腳本；僅建立 Draft，從不包含簽署私鑰
-- [ ] 建立公開 `Daniel-LoCY/luna-cycle` repository 並建立第一個 Draft Release
+- [x] 建立公開 `Daniel-LoCY/luna-cycle` repository
+- [ ] 建立第一個 GitHub Draft Release
 - [ ] 於 Android 裝置端對端驗證查詢、下載、安裝及既有加密 DB 保留
 
 ## 驗收紀錄
@@ -64,6 +65,6 @@
 - 2026-11-13：交付 Release APK 為 versionCode 2、versionName 1.0.0，大小約 81.8 MB；Release 權限僅含震動、通知與生物辨識相關權限，未要求 INTERNET。SHA-256：`d242648fc3aef8b738e3c989d78754b5eed04366106411214c2af67cf9a7b17c`。
 - 2026-11-13：最終版本 `flutter analyze` 無問題、`flutter test --concurrency=1` 29 項通過；OSV.dev 批次查詢 lockfile 中 149 個 Pub 套件版本，未回報已知公告。
 - 2026-11-13：使用 Xcode 26.4.1 完成 `flutter build ios --simulator --no-codesign`，成功產生 `build/ios/iphonesimulator/Runner.app`；未測試 iOS 實機簽署／安裝。
-- 2026-11-17：加入 Android GitHub Release 更新器與 Draft Release 發佈腳本；會驗證套件、版本、最低 API、SHA-256 及固定簽章指紋。GitHub repository 尚不存在，未建立線上 Draft Release。
+- 2026-11-17：加入 Android GitHub Release 更新器與 Draft Release 發佈腳本；會驗證套件、版本、最低 API、SHA-256 及固定簽章指紋。公開 repository 已建立，第一個 Draft Release 待建立。
 - 2026-11-17：Drift schema 升至 v3，加入藥物排程、服用標記、每日通知、舊 v2 備份相容、就診摘要 PDF、備份檢查和快速記錄復原；`flutter analyze` 通過，46 項 Flutter 測試通過。
-- 2026-11-17：本機 Release APK `1.1.0+3` 成功建置，確認 Application ID `app.lunacycle.personal`、minSdk 24、簽章指紋與預期相符；SHA-256 `269a8ef81bd19c09d58ae0aa38f5f7c1f78b5137f81c393e7b0aa13947e48dae`。尚未在 Android 裝置覆蓋安裝，GitHub repository 也尚未建立。
+- 2026-11-17：本機 Release APK `1.1.0+3` 成功建置，確認 Application ID `app.lunacycle.personal`、minSdk 24、簽章指紋與預期相符；SHA-256 `269a8ef81bd19c09d58ae0aa38f5f7c1f78b5137f81c393e7b0aa13947e48dae`。尚未在 Android 裝置覆蓋安裝。
